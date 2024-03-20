@@ -426,8 +426,9 @@ class PolygonIdFlutterChannel
                 call.arguments['claimSubjectProfileNonce'] as String),
             credential: ClaimEntity.fromJson(
                 jsonDecode(call.arguments['credential'] as String)),
-            circuitData: CircuitDataEntity.fromJson(
-                jsonDecode(call.arguments['circuitData'] as String)),
+            circuitId: call.arguments['circuitId'] as String,
+            zKeyPath: call.arguments['zKeyPath'] as String,
+            datFile: call.arguments['datFile'] as Uint8List,
             proofScopeRequest:
                 call.arguments['proofScopeRequest'] as Map<String, dynamic>,
             authClaim: (call.arguments['authClaim'] as List?)
@@ -820,27 +821,35 @@ class PolygonIdFlutterChannel
   }
 
   @override
-  Future<ZKProofEntity> prove(
-      {required String identifier,
-      required BigInt profileNonce,
-      required BigInt claimSubjectProfileNonce,
-      required ClaimEntity credential,
-      required CircuitDataEntity circuitData,
-      required Map<String, dynamic> proofScopeRequest,
-      List<String>? authClaim,
-      MTProofEntity? incProof,
-      MTProofEntity? nonRevProof,
-      GistMTProofEntity? gistProof,
-      Map<String, dynamic>? treeState,
-      String? challenge,
-      String? signature,
-      Map<String, dynamic>? config}) {
+  Future<ZKProofEntity> prove({
+    required String identifier,
+    required BigInt profileNonce,
+    required BigInt claimSubjectProfileNonce,
+    required ClaimEntity credential,
+    required String circuitId,
+    required String zKeyPath,
+    required Uint8List datFile,
+    required Map<String, dynamic> proofScopeRequest,
+    List<String>? authClaim,
+    MTProofEntity? incProof,
+    MTProofEntity? nonRevProof,
+    GistMTProofEntity? gistProof,
+    Map<String, dynamic>? treeState,
+    String? challenge,
+    String? signature,
+    Map<String, dynamic>? config,
+    String? verifierId,
+    String? linkNonce,
+    Map<String, dynamic>? transactionData,
+  }) {
     return _polygonIdSdk.proof.prove(
         identifier: identifier,
         profileNonce: profileNonce,
         claimSubjectProfileNonce: claimSubjectProfileNonce,
         credential: credential,
-        circuitData: circuitData,
+        circuitId: circuitId,
+        zKeyPath: zKeyPath,
+        datFile: datFile,
         proofScopeRequest: proofScopeRequest,
         challenge: challenge,
         signature: signature,

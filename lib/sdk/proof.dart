@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:archive/archive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:injectable/injectable.dart';
+import 'package:polygonid_flutter_sdk/common/domain/entities/chain_config_entity.dart';
 import 'package:polygonid_flutter_sdk/common/domain/entities/env_entity.dart';
 import 'package:polygonid_flutter_sdk/common/infrastructure/stacktrace_stream_manager.dart';
 import 'package:polygonid_flutter_sdk/constants.dart';
@@ -30,21 +32,27 @@ import 'package:polygonid_flutter_sdk/sdk/di/injector.dart';
 import 'package:web3dart/web3dart.dart';
 
 abstract class PolygonIdSdkProof {
-  Future<ZKProofEntity> prove(
-      {required String identifier,
-      required BigInt profileNonce,
-      required BigInt claimSubjectProfileNonce,
-      required ClaimEntity credential,
-      required CircuitDataEntity circuitData,
-      required Map<String, dynamic> proofScopeRequest,
-      List<String>? authClaim,
-      MTProofEntity? incProof,
-      MTProofEntity? nonRevProof,
-      GistMTProofEntity? gistProof,
-      Map<String, dynamic>? treeState,
-      String? challenge,
-      String? signature,
-      Map<String, dynamic>? config});
+  Future<ZKProofEntity> prove({
+    required String identifier,
+    required BigInt profileNonce,
+    required BigInt claimSubjectProfileNonce,
+    required ClaimEntity credential,
+    required String circuitId,
+    required String zKeyPath,
+    required Uint8List datFile,
+    required Map<String, dynamic> proofScopeRequest,
+    List<String>? authClaim,
+    MTProofEntity? incProof,
+    MTProofEntity? nonRevProof,
+    GistMTProofEntity? gistProof,
+    Map<String, dynamic>? treeState,
+    String? challenge,
+    String? signature,
+    Map<String, dynamic>? config,
+    String? verifierId,
+    String? linkNonce,
+    Map<String, dynamic>? transactionData,
+  });
 
   Stream<DownloadInfo> initCircuitsDownloadAndGetInfoStream({
     required List<CircuitsToDownloadParam> circuitsToDownload,
@@ -82,7 +90,9 @@ class Proof implements PolygonIdSdkProof {
     required BigInt profileNonce,
     required BigInt claimSubjectProfileNonce,
     required ClaimEntity credential,
-    required CircuitDataEntity circuitData,
+    required String circuitId,
+    required String zKeyPath,
+    required Uint8List datFile,
     required Map<String, dynamic> proofScopeRequest,
     List<String>? authClaim,
     MTProofEntity? incProof,
@@ -100,23 +110,25 @@ class Proof implements PolygonIdSdkProof {
     _stacktraceManager.addTrace("PolygonIdSdk.Proof.prove called");
     return generateZKProofUseCase.execute(
         param: GenerateZKProofParam(
-      identifier,
-      profileNonce,
-      claimSubjectProfileNonce,
-      credential,
-      circuitData,
-      authClaim,
-      incProof,
-      nonRevProof,
-      gistProof,
-      treeState,
-      challenge,
-      signature,
-      proofScopeRequest,
-      config,
-      verifierId,
-      linkNonce,
-      transactionData,
+      identifier: identifier,
+      profileNonce: profileNonce,
+      claimSubjectProfileNonce: claimSubjectProfileNonce,
+      credential: credential,
+      circuitId: circuitId,
+      zKeyPath: zKeyPath,
+      datFile: datFile,
+      authClaim: authClaim,
+      incProof: incProof,
+      nonRevProof: nonRevProof,
+      gistProof: gistProof,
+      treeState: treeState,
+      challenge: challenge,
+      signature: signature,
+      proofScopeRequest: proofScopeRequest,
+      config: config,
+      verifierId: verifierId,
+      linkNonce: linkNonce,
+      transactionData: transactionData,
     ));
   }
 
@@ -162,6 +174,7 @@ class Proof implements PolygonIdSdkProof {
   Future<String?> preCacheGistProof({
     required String genesisDid,
     required EnvEntity env,
+    required ChainConfigEntity chain,
   }) async {
     try {
       List<String> splittedDid = genesisDid.split(":");
@@ -171,7 +184,7 @@ class Proof implements PolygonIdSdkProof {
       ContractAbi contractAbi = ContractAbi.fromJson(
           jsonEncode(jsonDecode(stateAbiJson)["abi"]), 'State');
       EthereumAddress ethereumAddress =
-          EthereumAddress.fromHex(env.idStateContract);
+          EthereumAddress.fromHex(chain.stateContractAddr);
       DeployedContract contract =
           DeployedContract(contractAbi, ethereumAddress);
       String? cachedGistProof = await GistProofCache().getGistProof(

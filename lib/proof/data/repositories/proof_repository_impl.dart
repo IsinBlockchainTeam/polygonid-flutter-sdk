@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:polygonid_flutter_sdk/common/domain/tuples.dart';
 import 'package:polygonid_flutter_sdk/common/infrastructure/stacktrace_stream_manager.dart';
 import 'package:polygonid_flutter_sdk/common/utils/uint8_list_utils.dart';
 import 'package:polygonid_flutter_sdk/credential/data/dtos/claim_dto.dart';
@@ -81,10 +82,13 @@ class ProofRepositoryImpl extends ProofRepository {
 
   @override
   Future<CircuitDataEntity> loadCircuitFiles(String circuitId) async {
-    List<Uint8List> circuitFiles =
+    Pair<Uint8List, String> circuitFiles =
         await _circuitsFilesDataSource.loadCircuitFiles(circuitId);
-    CircuitDataEntity circuitDataEntity =
-        CircuitDataEntity(circuitId, circuitFiles[0], circuitFiles[1]);
+    CircuitDataEntity circuitDataEntity = CircuitDataEntity(
+      circuitId: circuitId,
+      datFile: circuitFiles.first,
+      zKeyPath: circuitFiles.second,
+    );
     return circuitDataEntity;
   }
 
@@ -192,45 +196,53 @@ class ProofRepositoryImpl extends ProofRepository {
   }
 
   @override
-  Future<Uint8List> calculateWitness(
-    CircuitDataEntity circuitData,
-    Uint8List atomicQueryInputs,
-  ) async {
+  Future<Uint8List> calculateWitness({
+    required Uint8List atomicQueryInputs,
+    required String circuitId,
+    required Uint8List datFile,
+  }) async {
     WitnessParam witnessParam =
-        WitnessParam(wasm: circuitData.datFile, json: atomicQueryInputs);
+        WitnessParam(wasm: datFile, json: atomicQueryInputs);
 
-    _stacktraceManager.addTrace(
-        "[calculateWitness] circuitData.circuitId ${circuitData.circuitId}");
-    CircuitType circuitType = _circuitTypeMapper.mapTo(circuitData.circuitId);
+    _stacktraceManager
+        .addTrace("[calculateWitness] circuitData.circuitId $circuitId");
+    CircuitType circuitType = _circuitTypeMapper.mapTo(circuitId);
     try {
       Uint8List? witness = await _witnessDataSource.computeWitness(
         type: circuitType,
         param: witnessParam,
       );
       if (witness == null) {
-        throw NullWitnessException(circuitData.circuitId);
+        throw NullWitnessException(circuitId);
       } else {
         return witness;
       }
     } catch (e) {
       _stacktraceManager.addTrace("[calculateWitness] NullWitnessException");
-      throw NullWitnessException(circuitData.circuitId);
+      throw NullWitnessException(circuitId);
     }
   }
 
   @override
-  Future<ZKProofEntity> prove(
-      CircuitDataEntity circuitData, Uint8List wtnsBytes) {
+  Future<ZKProofEntity> prove({
+    required String circuitId,
+    required String zKeyPath,
+    required Uint8List wtnsBytes,
+  }) {
     return _proverLibDataSource
-        .prove(circuitData.circuitId, circuitData.zKeyFile, wtnsBytes)
+        .prove(
+      zKeyPath: zKeyPath,
+      circuitId: circuitId,
+      wtnsBytes: wtnsBytes,
+    )
         .then((proof) {
       if (proof == null) {
         _stacktraceManager.addTrace("[prove] NullProofException");
-        throw NullProofException(circuitData.circuitId);
+        throw NullProofException(circuitId);
       }
 
       return _zkProofMapper.mapFrom(proof);
-    }).catchError((error) => throw NullProofException(circuitData.circuitId));
+    }).catchError((error) => throw NullProofException(circuitId));
   }
 
   @override

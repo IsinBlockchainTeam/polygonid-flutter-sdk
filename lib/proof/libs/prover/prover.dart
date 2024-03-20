@@ -21,16 +21,15 @@ class ProverLib {
 
   ProverLib();
 
-  Future<Map<String, dynamic>?> prove(
-      String circuitId, Uint8List zkeyBytes, Uint8List wtnsBytes) async {
+  Future<Map<String, dynamic>?> prove({
+    required String circuitId,
+    required String zkeyPath,
+    required Uint8List wtnsBytes,
+  }) async {
     Map<String, dynamic> map = {};
+    ffi.Pointer<ffi.Char> zkeyFilePath =
+        zkeyPath.toNativeUtf8().cast<ffi.Char>();
 
-    int zkeySize = zkeyBytes.length;
-    ffi.Pointer<ffi.Char> zkeyBuffer = malloc<ffi.Char>(zkeySize);
-    final data = zkeyBytes;
-    for (int i = 0; i < zkeySize; i++) {
-      zkeyBuffer[i] = data[i];
-    }
     int wtnsSize = wtnsBytes.length;
     ffi.Pointer<ffi.Char> wtnsBuffer = malloc<ffi.Char>(wtnsSize);
     final data2 = wtnsBytes.buffer.asUint8List();
@@ -47,9 +46,8 @@ class ProverLib {
     int errorMaxSize = 256;
     ffi.Pointer<ffi.Char> errorMsg = malloc<ffi.Char>(errorMaxSize);
 
-    int result = _nativeProverLib.groth16_prover(
-        zkeyBuffer.cast(),
-        zkeySize,
+    int result = _nativeProverLib.groth16_prover_zkey_file(
+        zkeyFilePath.cast(),
         wtnsBuffer.cast(),
         wtnsSize,
         proofBuffer,
@@ -59,7 +57,7 @@ class ProverLib {
         errorMsg,
         errorMaxSize);
 
-    if (result == PRPOVER_OK) {
+    if (result == PROVER_OK) {
       ffi.Pointer<Utf8> jsonString = proofBuffer.cast<Utf8>();
       String proofmsg = jsonString.toDartString();
 
@@ -71,12 +69,12 @@ class ProverLib {
           .putIfAbsent("curve", () => "bn128");
       map['pub_signals'] = json.decode(publicmsg).cast<String>();
       return map;
-    } else if (result == PPROVER_ERROR) {
+    } else if (result == PROVER_ERROR) {
       ffi.Pointer<Utf8> jsonString = errorMsg.cast<Utf8>();
       String errormsg = jsonString.toDartString();
 
       logger().i("$result: ${result.toString()}. Error: $errormsg");
-    } else if (result == PPROVER_ERROR_SHORT_BUFFER) {
+    } else if (result == PROVER_ERROR_SHORT_BUFFER) {
       logger().i(
           "$result: ${result.toString()}. Error: Short buffer for proof or public");
     }

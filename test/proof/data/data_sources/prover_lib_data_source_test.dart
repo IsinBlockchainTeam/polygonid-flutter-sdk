@@ -23,8 +23,11 @@ main() {
     setUp(() {
       reset(proverLibWrapper);
 
-      when(proverLibWrapper.prover(any, any, any))
-          .thenAnswer((realInvocation) => Future.value(mockProverRes));
+      when(proverLibWrapper.prover(
+        circuitId: any,
+        zKeyPath: any,
+        wtnsBytes: any,
+      )).thenAnswer((realInvocation) => Future.value(mockProverRes));
     });
 
     test(
@@ -32,14 +35,19 @@ main() {
       () async {
         expect(
             await dataSource.prove(
-                CommonMocks.circuitId, ProofMocks.zKeyFile, ProofMocks.datFile),
+              circuitId: CommonMocks.circuitId,
+              zKeyPath: ProofMocks.zKeyPath,
+              wtnsBytes: ProofMocks.datFile,
+            ),
             mockProverRes);
 
-        var captured =
-            verify(proverLibWrapper.prover(captureAny, captureAny, captureAny))
-                .captured;
+        var captured = verify(proverLibWrapper.prover(
+          circuitId: captureAny,
+          zKeyPath: captureAny,
+          wtnsBytes: captureAny,
+        )).captured;
         expect(captured[0], CommonMocks.circuitId);
-        expect(captured[1], ProofMocks.zKeyFile);
+        expect(captured[1], ProofMocks.zKeyPath);
         expect(captured[2], ProofMocks.datFile);
       },
     );

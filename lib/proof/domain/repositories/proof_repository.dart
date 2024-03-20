@@ -35,13 +35,18 @@ abstract class ProofRepository {
     Map<String, dynamic>? transactionData,
   });
 
-  Future<Uint8List> calculateWitness(
-    CircuitDataEntity circuitData,
-    Uint8List atomicQueryInputs,
-  );
+  Future<Uint8List> calculateWitness({
+    required String circuitId,
+    required Uint8List datFile,
+    required Uint8List atomicQueryInputs,
+  });
 
-  Future<ZKProofEntity> prove(
-      CircuitDataEntity circuitData, Uint8List wtnsBytes);
+  Future<ZKProofEntity> prove({
+    required String circuitId,
+    required String zKeyPath,
+    required Uint8List wtnsBytes,
+  });
+
 
   Future<GistMTProofEntity> getGistProof(
       {required String idAsInt, required String contractAddress});

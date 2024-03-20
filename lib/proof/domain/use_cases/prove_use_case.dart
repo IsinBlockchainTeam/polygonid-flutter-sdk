@@ -9,9 +9,17 @@ import 'package:polygonid_flutter_sdk/proof/domain/repositories/proof_repository
 
 class ProveParam {
   final Uint8List inputs;
-  final CircuitDataEntity circuitData;
 
-  ProveParam(this.inputs, this.circuitData);
+  final String circuitId;
+  final zKeyPath;
+  final Uint8List datFile;
+
+  ProveParam({
+    required this.inputs,
+    required this.circuitId,
+    required this.zKeyPath,
+    required this.datFile,
+  });
 }
 
 class ProveUseCase extends FutureUseCase<ProveParam, ZKProofEntity> {
@@ -28,17 +36,21 @@ class ProveUseCase extends FutureUseCase<ProveParam, ZKProofEntity> {
     try {
       // Calculate witness
       Uint8List wtnsBytes = await _proofRepository.calculateWitness(
-        param.circuitData,
-        param.inputs,
+        circuitId: param.circuitId,
+        atomicQueryInputs: param.inputs,
+        datFile: param.datFile,
       );
 
       Stopwatch stopwatch = Stopwatch()..start();
 
       // Generate proof
       ZKProofEntity zkProofEntity = await _proofRepository.prove(
-        param.circuitData,
-        wtnsBytes,
+        circuitId: param.circuitId,
+        zKeyPath: param.zKeyPath,
+        wtnsBytes: wtnsBytes,
       );
+
+      print("proof generated in ${stopwatch.elapsedMilliseconds} ms");
 
       _stacktraceManager.addTrace("[ProveUseCase] proof");
       _stacktraceManager.addTrace(

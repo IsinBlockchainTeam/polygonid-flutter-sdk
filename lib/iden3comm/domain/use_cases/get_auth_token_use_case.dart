@@ -64,10 +64,14 @@ class GetAuthTokenUseCase extends FutureUseCase<GetAuthTokenParam, String> {
       CircuitDataEntity circuit =
           await _loadCircuitUseCase.execute(param: "authV2");
 
+
+
       ZKProofEntity zkProofEntity = await _proveUseCase.execute(
         param: ProveParam(
-          authInputs,
-          circuit,
+          circuitId: "authV2",
+          datFile: circuit.datFile,
+          zKeyPath: circuit.zKeyPath,
+          inputs: authInputs,
         ),
       );
 

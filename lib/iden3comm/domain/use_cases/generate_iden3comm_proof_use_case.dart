@@ -267,7 +267,14 @@ class GenerateIden3commProofUseCase
 
     // Prove
     return _proveUseCase
-        .execute(param: ProveParam(atomicQueryInputs, param.circuitData))
+        .execute(
+      param: ProveParam(
+        inputs: atomicQueryInputs,
+        circuitId: param.circuitData.circuitId,
+        datFile: param.circuitData.datFile,
+        zKeyPath: param.circuitData.zKeyPath,
+      ),
+    )
         .then((proof) {
       _stacktraceManager.addTrace(
         "[GenerateIden3commProofUseCase][MainFlow] proof: ${jsonEncode(proof.toJson())}",

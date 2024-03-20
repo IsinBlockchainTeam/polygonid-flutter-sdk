@@ -376,18 +376,8 @@ class Authenticate {
 
       var circuitZkeyFileName = '${proofRequest.scope.circuitId}.zkey';
       var circuitZkeyFilePath = '$appDocPath/$circuitZkeyFileName';
-      var circuitZkeyFile = File(circuitZkeyFilePath);
 
-      List<Uint8List> circuitFiles = [
-        circuitDatFile.readAsBytesSync(),
-        circuitZkeyFile.readAsBytesSync()
-      ];
-
-      CircuitDataEntity circuitDataEntity = CircuitDataEntity(
-        proofRequest.scope.circuitId,
-        circuitFiles[0],
-        circuitFiles[1],
-      );
+      Uint8List circuitDatFileBytes = circuitDatFile.readAsBytesSync();
 
       BigInt claimSubjectProfileNonce = identityEntity.profiles.keys.firstWhere(
           (k) => identityEntity.profiles[k] == claim.did,
@@ -407,21 +397,6 @@ class Authenticate {
           groupIdLinkNonceMap[groupId] = linkNonce;
         }
       }
-
-      GenerateIden3commProofParam proofParam = GenerateIden3commProofParam(
-        did: genesisDid,
-        profileNonce: profileNonce,
-        claimSubjectProfileNonce: claimSubjectProfileNonce,
-        credential: claim,
-        request: proofRequest.scope,
-        circuitData: circuitDataEntity,
-        privateKey: privateKey,
-        challenge: challenge,
-        config: env.config,
-        verifierId: message.from,
-        linkNonce: linkNonce,
-        transactionData: transactionData,
-      );
 
       Map<String, dynamic>? config;
       String? signature;
@@ -482,14 +457,20 @@ class Authenticate {
       }
 
       Uint8List witnessBytes = await proofRepository.calculateWitness(
-        circuitDataEntity,
-        atomicQueryInputs,
+        circuitId: proofRequest.scope.circuitId,
+        datFile: circuitDatFileBytes,
+        atomicQueryInputs: atomicQueryInputs,
       );
 
+      Stopwatch stopwatch = Stopwatch()..start();
+
       ZKProofEntity zkProofEntity = await proofRepository.prove(
-        circuitDataEntity,
-        witnessBytes,
+        circuitId: proofRequest.scope.circuitId,
+        zKeyPath: circuitZkeyFilePath,
+        wtnsBytes: witnessBytes,
       );
+
+      print("proof for circuit ${proofRequest.scope.circuitId} generated in ${stopwatch.elapsedMilliseconds} ms");
 
       Iden3commProofEntity proof;
       if (vpProof != null) {
@@ -1082,31 +1063,24 @@ class Authenticate {
 
     var circuitZkeyFileName = 'authV2.zkey';
     var circuitZkeyFilePath = '$appDocPath/$circuitZkeyFileName';
-    var circuitZkeyFile = File(circuitZkeyFilePath);
 
     Uint8List circuitsDatFileBytes = await circuitDatFile.readAsBytes();
-    Uint8List circuitsZkeyFileBytes = await circuitZkeyFile.readAsBytes();
-
-    List<Uint8List> circuitFiles = [
-      circuitsDatFileBytes,
-      circuitsZkeyFileBytes,
-    ];
-
-    CircuitDataEntity circuitDataEntity = CircuitDataEntity(
-      "authV2",
-      circuitFiles[0],
-      circuitFiles[1],
-    );
 
     Uint8List witnessBytes = await proofRepository.calculateWitness(
-      circuitDataEntity,
-      authInputsBytes,
+      circuitId: "authV2",
+      atomicQueryInputs: authInputsBytes,
+      datFile: circuitsDatFileBytes,
     );
 
+    Stopwatch stopwatch = Stopwatch()..start();
+
     ZKProofEntity zkProofEntity = await proofRepository.prove(
-      circuitDataEntity,
-      witnessBytes,
+      circuitId: "authV2",
+      wtnsBytes: witnessBytes,
+      zKeyPath: circuitZkeyFilePath,
     );
+
+    print('proving time for AuthV2: ${stopwatch.elapsedMilliseconds} ms');
 
     JWZEntity jwzZkProof = JWZEntity(
       header: header,

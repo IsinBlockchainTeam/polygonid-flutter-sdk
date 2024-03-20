@@ -35,7 +35,9 @@ class GenerateZKProofParam {
   final BigInt profileNonce;
   final BigInt claimSubjectProfileNonce;
   final ClaimEntity credential;
-  final CircuitDataEntity circuitData;
+  final String circuitId;
+  final Uint8List datFile;
+  final String zKeyPath;
   final List<String>? authClaim;
   final MTProofEntity? incProof;
   final MTProofEntity? nonRevProof;
@@ -51,12 +53,14 @@ class GenerateZKProofParam {
 
   final Map<String, dynamic>? transactionData;
 
-  GenerateZKProofParam(
-    this.identifier,
-    this.profileNonce,
-    this.claimSubjectProfileNonce,
-    this.credential,
-    this.circuitData,
+  GenerateZKProofParam({
+    required this.identifier,
+    required this.profileNonce,
+    required this.claimSubjectProfileNonce,
+    required this.credential,
+    required this.circuitId,
+    required this.zKeyPath,
+    required this.datFile,
     this.authClaim,
     this.incProof,
     this.nonRevProof,
@@ -64,12 +68,12 @@ class GenerateZKProofParam {
     this.treeState,
     this.challenge,
     this.signature,
-    this.proofScopeRequest,
+    required this.proofScopeRequest,
     this.config,
     this.verifierId,
     this.linkNonce,
     this.transactionData,
-  );
+  });
 }
 
 class GenerateZKProofUseCase
@@ -101,7 +105,7 @@ class GenerateZKProofUseCase
       signature: param.signature,
       claim: param.credential,
       proofScopeRequest: param.proofScopeRequest,
-      circuitId: param.circuitData.circuitId,
+      circuitId: param.circuitId,
       config: param.config,
       verifierId: param.verifierId,
       linkNonce: param.linkNonce,
@@ -124,7 +128,13 @@ class GenerateZKProofUseCase
 
     // Prove
     return _proveUseCase
-        .execute(param: ProveParam(atomicQueryInputs, param.circuitData))
+        .execute(
+            param: ProveParam(
+      inputs: atomicQueryInputs,
+      circuitId: param.circuitId,
+      zKeyPath: param.zKeyPath,
+      datFile: param.datFile,
+    ))
         .then((proof) {
       logger().i("[GenerateZKProofUseCase] proof: $proof");
       _stacktraceManager.addTrace("[GenerateZKProofUseCase] proof");

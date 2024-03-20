@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:polygonid_flutter_sdk/common/domain/tuples.dart';
 import 'package:polygonid_flutter_sdk/proof/domain/exceptions/proof_generation_exceptions.dart';
 import 'package:polygonid_flutter_sdk/sdk/di/injector.dart';
 
@@ -10,7 +11,7 @@ class CircuitsFilesDataSource {
 
   CircuitsFilesDataSource(this.directory);
 
-  Future<List<Uint8List>> loadCircuitFiles(String circuitId) async {
+  Future<Pair<Uint8List, String>> loadCircuitFiles(String circuitId) async {
     String path = directory.path;
 
     try {
@@ -20,12 +21,11 @@ class CircuitsFilesDataSource {
 
       var circuitZkeyFileName = '$circuitId.zkey';
       var circuitZkeyFilePath = '$path/$circuitZkeyFileName';
-      var circuitZkeyFile = File(circuitZkeyFilePath);
 
-      return [
+      return Pair(
         circuitDatFile.readAsBytesSync(),
-        circuitZkeyFile.readAsBytesSync()
-      ];
+        circuitZkeyFilePath,
+      );
     } on PathNotFoundException catch (error) {
       throw CircuitNotDownloadedException(
         circuit: circuitId,
