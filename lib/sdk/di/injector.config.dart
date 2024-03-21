@@ -441,7 +441,7 @@ extension GetItInjectableX on _i1.GetIt {
     gh.lazySingleton<_i3.AssetBundle>(() => platformModule.assetBundle);
     gh.factory<_i4.AuthInputsMapper>(() => _i4.AuthInputsMapper());
     gh.factory<_i5.AuthResponseMapper>(() => _i5.AuthResponseMapper());
-    gh.factory<_i6.BabyjubjubLib>(() => _i6.BabyjubjubLib());
+    gh.lazySingleton<_i6.BabyjubjubLib>(() => _i6.BabyjubjubLib());
     gh.factory<_i7.CheckProfileValidityUseCase>(
         () => _i7.CheckProfileValidityUseCase());
     gh.factory<_i8.CircuitTypeMapper>(() => _i8.CircuitTypeMapper());
@@ -522,7 +522,7 @@ extension GetItInjectableX on _i1.GetIt {
     gh.factoryAsync<_i45.PackageInfoRepositoryImpl>(() async =>
         _i45.PackageInfoRepositoryImpl(
             await getAsync<_i44.PackageInfoDataSource>()));
-    gh.factory<_i46.PolygonIdCore>(() => _i46.PolygonIdCore());
+    gh.lazySingleton<_i46.PolygonIdCore>(() => _i46.PolygonIdCore());
     gh.factory<_i47.PolygonIdCoreCredential>(
         () => _i47.PolygonIdCoreCredential());
     gh.factory<_i48.PolygonIdCoreIden3comm>(
@@ -540,7 +540,7 @@ extension GetItInjectableX on _i1.GetIt {
         () => _i56.ProofGenerationStepsStreamManager());
     gh.factory<_i57.ProofRequestFiltersMapper>(
         () => _i57.ProofRequestFiltersMapper());
-    gh.factory<_i58.ProverLib>(() => _i58.ProverLib());
+    gh.lazySingleton<_i58.ProverLib>(() => _i58.ProverLib());
     gh.factory<_i59.ProverLibWrapper>(() => _i59.ProverLibWrapper());
     gh.factory<_i60.QMapper>(() => _i60.QMapper());
     gh.factory<_i61.RemoteIdentityDataSource>(
@@ -560,6 +560,14 @@ extension GetItInjectableX on _i1.GetIt {
       instanceName: 'keyValueStore',
     );
     gh.factory<_i13.StoreRef<String, Map<String, Object?>>>(
+      () => databaseModule.profileStore,
+      instanceName: 'profilesStore',
+    );
+    gh.factory<_i13.StoreRef<String, Map<String, Object?>>>(
+      () => databaseModule.didProfileInfoStore,
+      instanceName: 'didProfileInfoStore',
+    );
+    gh.factory<_i13.StoreRef<String, Map<String, Object?>>>(
       () => databaseModule.interactionStore,
       instanceName: 'interactionStore',
     );
@@ -571,14 +579,6 @@ extension GetItInjectableX on _i1.GetIt {
       () => databaseModule.identityStore,
       instanceName: 'identityStore',
     );
-    gh.factory<_i13.StoreRef<String, Map<String, Object?>>>(
-      () => databaseModule.profileStore,
-      instanceName: 'profilesStore',
-    );
-    gh.factory<_i13.StoreRef<String, Map<String, Object?>>>(
-      () => databaseModule.didProfileInfoStore,
-      instanceName: 'didProfileInfoStore',
-    );
     gh.factory<_i66.TreeStateMapper>(() => _i66.TreeStateMapper());
     gh.factory<_i67.TreeTypeMapper>(() => _i67.TreeTypeMapper());
     gh.factory<_i68.WalletLibWrapper>(() => _i68.WalletLibWrapper());
@@ -587,17 +587,18 @@ extension GetItInjectableX on _i1.GetIt {
       _,
     ) =>
         networkModule.web3client(rpcUrl));
-    gh.factory<_i70.WitnessAuthV2Lib>(() => _i70.WitnessAuthV2Lib());
+    gh.lazySingleton<_i70.WitnessAuthV2Lib>(() => _i70.WitnessAuthV2Lib());
     gh.factory<_i71.WitnessIsolatesWrapper>(
         () => _i71.WitnessIsolatesWrapper());
-    gh.factory<_i72.WitnessMTPV2Lib>(() => _i72.WitnessMTPV2Lib());
-    gh.factory<_i73.WitnessMTPV2OnchainLib>(
+    gh.lazySingleton<_i72.WitnessMTPV2Lib>(() => _i72.WitnessMTPV2Lib());
+    gh.lazySingleton<_i73.WitnessMTPV2OnchainLib>(
         () => _i73.WitnessMTPV2OnchainLib());
-    gh.factory<_i74.WitnessSigV2Lib>(() => _i74.WitnessSigV2Lib());
-    gh.factory<_i75.WitnessSigV2OnchainLib>(
+    gh.lazySingleton<_i74.WitnessSigV2Lib>(() => _i74.WitnessSigV2Lib());
+    gh.lazySingleton<_i75.WitnessSigV2OnchainLib>(
         () => _i75.WitnessSigV2OnchainLib());
-    gh.factory<_i76.WitnessV3Lib>(() => _i76.WitnessV3Lib());
-    gh.factory<_i77.WitnessV3OnchainLib>(() => _i77.WitnessV3OnchainLib());
+    gh.lazySingleton<_i76.WitnessV3Lib>(() => _i76.WitnessV3Lib());
+    gh.lazySingleton<_i77.WitnessV3OnchainLib>(
+        () => _i77.WitnessV3OnchainLib());
     gh.factory<_i78.ZKProofBaseMapper>(() => _i78.ZKProofBaseMapper());
     gh.factory<_i79.ZKProofMapper>(() => _i79.ZKProofMapper());
     gh.factory<_i80.ZipDecoder>(() => filesManagerModule.zipDecoder());

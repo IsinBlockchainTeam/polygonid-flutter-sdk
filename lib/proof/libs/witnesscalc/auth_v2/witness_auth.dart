@@ -9,7 +9,7 @@ import 'package:injectable/injectable.dart';
 
 import 'native_witness_auth_v2.dart';
 
-@injectable
+@lazySingleton
 class WitnessAuthV2Lib {
   static NativeWitnessAuthV2Lib get _nativeWitnessAuthV2Lib {
     return Platform.isAndroid

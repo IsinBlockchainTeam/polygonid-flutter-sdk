@@ -10,7 +10,7 @@ import 'package:polygonid_flutter_sdk/common/domain/domain_logger.dart';
 
 import 'native_witness_sig_v2.dart';
 
-@injectable
+@lazySingleton
 class WitnessSigV2Lib {
   static NativeWitnessSigV2Lib get _nativeWitnessSigV2Lib {
     return Platform.isAndroid

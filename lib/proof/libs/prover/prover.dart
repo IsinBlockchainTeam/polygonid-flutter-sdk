@@ -11,7 +11,7 @@ import 'package:polygonid_flutter_sdk/common/domain/domain_logger.dart';
 
 import 'native_prover.dart';
 
-@injectable
+@lazySingleton
 class ProverLib {
   static NativeProverLib get _nativeProverLib {
     return Platform.isAndroid

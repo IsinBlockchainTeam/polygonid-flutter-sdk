@@ -7,7 +7,7 @@ import 'package:injectable/injectable.dart';
 typedef CStringFree = void Function(Pointer<Utf8>);
 typedef CStringFreeFFI = Void Function(Pointer<Utf8>);
 
-@injectable
+@lazySingleton
 class BabyjubjubLib {
   final DynamicLibrary _nativeBabyjubjubLib = Platform.isAndroid
       ? DynamicLibrary.open("libbabyjubjub.so")

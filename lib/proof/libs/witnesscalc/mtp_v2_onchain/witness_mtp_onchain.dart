@@ -10,7 +10,7 @@ import 'package:polygonid_flutter_sdk/common/domain/domain_logger.dart';
 
 import 'native_witness_mtp_v2_onchain.dart';
 
-@injectable
+@lazySingleton
 class WitnessMTPV2OnchainLib {
   static NativeWitnessMtpOnchainLib get _nativeWitnessMTPV2OnchainLib {
     return Platform.isAndroid

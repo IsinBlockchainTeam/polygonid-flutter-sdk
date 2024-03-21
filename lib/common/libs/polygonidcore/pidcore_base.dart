@@ -8,7 +8,7 @@ import 'package:injectable/injectable.dart';
 
 import 'native_polygonidcore.dart';
 
-@injectable
+@lazySingleton
 class PolygonIdCore {
   static NativePolygonIdCoreLib get nativePolygonIdCoreLib {
     return Platform.isAndroid
